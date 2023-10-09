@@ -24,14 +24,14 @@ def put_item(item: Item):
 
 @app.patch("/item")
 def patch_item(item: Item):
-    if(Helper.replace_item(item)):
+    if(Helper.replace_item(item, items)):
         return item
     else:
         raise HTTPException(status_code=404, detail="Item not found")
 
 @app.delete("/item/{itemid}")
 def delete_item(itemid):
-    item_to_delete = Helper.find_item(itemid)
+    item_to_delete = Helper.find_item(itemid, items)
     if(item_to_delete):
         items.remove(item_to_delete)
     else:

@@ -12,5 +12,5 @@ class Helper():
         for index, item in enumerate(items):
             if item.id == new_item.id:
                 items[index] = new_item
-            else:
-                return None
+                return items[index]
+        return None
