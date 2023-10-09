@@ -1,19 +1,39 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from helper import Helper
 from models import Item
-import uuid
+import uuid, logging, time, string, random
+
+logging.config.fileConfig('logging.conf', disable_existing_loggers=False)
+logger = logging.getLogger(__name__) 
 
 items: list[Item] = []
 
 app = FastAPI()
 
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    idem = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    logger.info(f"rid={idem} start request path={request.url.path}")
+    start_time = time.time()
+    
+    response = await call_next(request)
+    
+    process_time = (time.time() - start_time) * 1000
+    formatted_process_time = '{0:.2f}'.format(process_time)
+    logger.info(f"rid={idem} completed_in={formatted_process_time}ms status_code={response.status_code}")
+    
+    return response
+
+
 @app.get("/items")
 def get_items():
+    logger.info("GET /items")
     return items
 
 @app.get("/item/{itemid}")
 def get_item(itemid):
-    return Helper.find_item(itemid)
+    logger.info("GET /item/{itemid}")
+    return Helper.find_item(itemid, items)
 
 @app.put("/item")
 def put_item(item: Item):
